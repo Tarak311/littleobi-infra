@@ -1,0 +1,11 @@
+- hosts: vmhosts
+  tasks:
+  - name : Install virt package
+    dnf: name=virt-install state=present update_cache=true
+    become: true
+  - name : Install QEMU package
+    dnf: name=qemu-kvm state=present update_cache=true
+    become: true
+  - name : Install libvirt package
+    dnf: name=libvirt state=present update_cache=true
+    become: true

@@ -1,0 +1,11 @@
+---
+- name: Enable Libvirt
+  hosts: vmhosts
+  become: yes
+  tasks:
+  - name: Enable Libvirt
+    systemd: 
+      name: libvirtd
+      enabled: yes
+      state: started
+
