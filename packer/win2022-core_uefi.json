@@ -1,0 +1,133 @@
+{
+    "variables": {
+        "boot_wait": "13s",
+        "disk_size": "40960",
+        "iso_url": "/home/tarak311/SERVER_EVAL_x64FRE_en-us.iso",
+        "iso_checksum": "sha256:3E4FA6D8507B554856FC9CA6079CC402DF11A8B79344871669F0251535255325" ,
+        "memsize": "4096",
+        "numvcpus": "4",
+        "vm_name": "WINSRVCR-BASE",
+        "winrm_password" : "packer",
+        "winrm_username" : "Administrator",
+        "virtio_iso_path" : "virtio-win-0.1.229.iso"
+    },
+    "builders": [
+        {
+            "type": "vmware-iso",
+            "guest_os_type": "windows2019srv-64",
+            "vm_name":"{{user `vm_name`}}",
+            "boot_command": ["<spacebar>"],
+            "boot_wait": "{{user `boot_wait`}}",
+            "disk_size": "{{user `disk_size`}}",
+            "disk_type_id": "0",
+            "headless": false,
+            "iso_checksum": "{{user `iso_checksum`}}",
+            "iso_url": "{{user `iso_url`}}",
+            "communicator":"winrm",
+            "winrm_username": "{{user `winrm_username`}}",
+            "winrm_password": "{{user `winrm_password`}}",
+            "winrm_use_ssl": true,
+            "winrm_insecure": true,
+            "winrm_timeout": "4h",
+            "floppy_files": ["scripts/uefi/core/autounattend.xml"],
+            "shutdown_command": "shutdown /s /t 5 /f /d p:4:1 /c \"Packer Shutdown\"",
+            "shutdown_timeout": "30m",
+            "skip_compaction": false,
+            "vmx_data": {
+                "memsize": "{{user `memsize`}}",
+                "numvcpus": "{{user `numvcpus`}}",
+                "virtualHW.version": "14",
+                "firmware": "efi",
+                "scsi0.virtualDev": "lsisas1068"
+            }
+        },
+        {
+            "type": "virtualbox-iso",
+            "guest_os_type": "Windows2019_64",
+            "vm_name": "{{user `vm_name`}}",
+            "boot_command": ["<Kr>"],
+            "iso_url": "{{user `iso_url`}}",
+            "iso_checksum": "{{user `iso_checksum`}}",
+            "guest_additions_mode": "disable",
+            "headless": true,
+            "boot_wait": "{{user `boot_wait`}}",
+            "disk_size": "{{user `disk_size`}}",
+            "communicator":"winrm",
+            "winrm_username": "{{user `winrm_username`}}",
+            "winrm_password": "{{user `winrm_password`}}",
+            "winrm_use_ssl": true,
+            "winrm_insecure": true,
+            "winrm_timeout": "4h",
+            "shutdown_command": "shutdown /s /t 5 /f /d p:4:1 /c \"Packer Shutdown\"",
+            "shutdown_timeout": "30m",
+            "iso_interface": "sata",
+            "vboxmanage": [
+                ["modifyvm", "{{.Name}}", "--memory", "{{user `memsize`}}"],
+                ["modifyvm", "{{.Name}}", "--cpus", "{{user `numvcpus`}}"],
+                ["modifyvm", "{{.Name}}", "--firmware", "EFI"],
+                ["storageattach", "{{.Name}}", "--storagectl", "SATA Controller", "--type", "dvddrive", "--port", "3", "--medium", "./scripts/uefi/core/autounattend.iso"]
+            ]
+        },
+        {
+            "type": "qemu",
+            "machine_type": "q35",
+            "efi_boot": true,
+            "efi_firmware_vars": "scripts/uefi/OVMF_VARS.fd",
+            "boot_command": [
+                "<wait10>",
+                "reset<enter>",
+                "<wait5>",
+                "<spacebar>"
+            ],
+            "memory": "{{user `memsize`}}",
+            "cpus": "{{user `numvcpus`}}",
+            "vm_name": "{{user `vm_name`}}.qcow2",
+            "iso_url": "{{user `iso_url`}}",
+            "iso_checksum": "{{user `iso_checksum`}}",
+            "headless": true,
+            "boot_wait": "{{user `boot_wait`}}",
+            "disk_size": "{{user `disk_size`}}",
+            "disk_interface": "virtio-scsi",
+            "disk_discard": "unmap",
+            "disk_detect_zeroes": "unmap",
+            "format": "qcow2",
+            "communicator":"winrm",
+            "winrm_username": "{{user `winrm_username`}}",
+            "winrm_password": "{{user `winrm_password`}}",
+            "winrm_use_ssl": true,
+            "winrm_insecure": true,
+            "winrm_timeout": "4h",
+            "qemuargs": [ [ "-cdrom", "{{user `virtio_iso_path`}}" ] ],
+            "floppy_files": ["scripts/uefi/core/autounattend.xml"],
+            "shutdown_command": "shutdown /s /t 5 /f /d p:4:1 /c \"Packer Shutdown\"",
+            "shutdown_timeout": "30m"
+        }
+    ],
+    "provisioners": [
+        {
+            "type": "powershell",
+            "only": ["vmware-iso"],
+            "scripts": ["scripts/vmware-tools.ps1"],
+            "pause_before": "1m"
+        },
+        {
+            "type": "powershell",
+            "only": ["virtualbox-iso"],
+            "scripts": ["scripts/virtualbox-guest-additions.ps1"],
+            "pause_before": "1m"
+        },
+        {
+            "type": "powershell",
+            "scripts": ["scripts/setup.ps1"]
+        },
+        {
+            "type": "windows-restart",
+            "restart_timeout": "30m"
+        },
+        {
+            "type": "powershell",
+            "scripts": ["scripts/cleanup.ps1"],
+            "pause_before": "1m"
+        }
+    ]
+}
