@@ -1,0 +1,66 @@
+{
+	"builders": [
+		{
+			"type": "virtualbox-ovf",
+			"vm_name" : "ADDS",
+			"source_path": "D:/Users/tarak/Downloads/WINSRVCR-001.ova",
+			"checksum" : "sha256:AE3B82FC7E01E60A3AE40FD6BAA4332DEECD6C29059F58D05D1B0F73FE35C727F",
+			"vboxmanage": [
+				["modifyvm", "{{.Name}}", "--memory", "2048"],
+				["modifyvm", "{{.Name}}", "--vram", "48"],
+				["modifyvm", "{{.Name}}", "--cpus", "2"],
+				["modifyvm", "{{.Name}}", "--nic2","bridged"],
+				["modifyvm", "{{.Name}}", "--bridgeadapter2","Intel(R) Wi-Fi 6 AX201 160MHz"],
+				["modifyvm", "{{.Name}}", "--macaddress2","080027C3CF03"],
+				["modifyvm", "{{.Name}}", "--cableconnected2","on"],
+				["modifyvm", "{{.Name}}", "--cableconnected1","on"],
+				["modifyvm", "{{.Name}}", "--nic1","nat"]
+				
+			],
+			"guest_additions_mode" : "disable",
+			"virtualbox_version_file" : "",
+			"communicator": "winrm",
+			"winrm_username": "Administrator",
+			"winrm_password": "Lalohel311",
+			"winrm_use_ssl": false,
+            "winrm_insecure": true,
+        	"winrm_timeout": "4h",	
+	 		"headless": "{{ user `headless` }}",
+			"output_directory": "../builds/packer-{{user `template`}}-virtualbox",
+			"shutdown_command": "shutdown /s /t 10 /f /d p:4:1 /c \"Packer Shutdown\"",
+			"shutdown_timeout": "60m",
+			"boot_wait": "3m",
+			"boot_command": [
+				"<return><wait1>",
+				"Lalohel311<tab>Lalohel311<return><wait5><return>",
+				"<return>"
+			  ]
+			
+		}
+	],
+	"provisioners": [
+	  
+		{
+			"type": "powershell",
+			"scripts": ["scripts/changename.ps1"],
+			"elevated_user": "Administrator",
+			"elevated_password": "{{.WinRMPassword}}",
+			"pause_before": "0m"
+		  },
+		  {
+			"type": "windows-restart"
+		  },	
+	  	{
+        	"type": "powershell",
+			"scripts": ["scripts/adds.ps1"],
+			"elevated_user": "Administrator",
+			"elevated_password": "{{.WinRMPassword}}",
+        	"pause_before": "0m"
+		  }	
+	],
+
+	"variables": {
+		"headless": "true",
+		"template": "ADDS"
+	}
+}
