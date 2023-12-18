@@ -21,7 +21,7 @@
 			"virtualbox_version_file" : "",
 			"communicator": "winrm",
 			"winrm_password" : "packer",
-        	"winrm_username" : "packer-win2011\Administrator",
+        	"winrm_username" : "Administrator",
 			"winrm_use_ssl": false,
             "winrm_insecure": true,
         	"winrm_timeout": "4h",	
