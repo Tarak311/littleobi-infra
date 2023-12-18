@@ -3,7 +3,7 @@
 		{
 			"type": "virtualbox-ovf",
 			"vm_name" : "ADDS",
-			"source_path": "D:/Users/tarak/Downloads/WINSRVCR-001.ova",
+			"source_path": "C:/Users/tarak/Downloads/WINSRVCR-001.ova",
 			"checksum" : "sha256:AE3B82FC7E1E60A3AE40FD6BAA4332DEECD6C29059F58D05D1B0F73FE35C727F",
 			"vboxmanage": [
 				["modifyvm", "{{.Name}}", "--memory", "2048"],
