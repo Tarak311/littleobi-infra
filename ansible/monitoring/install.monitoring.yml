@@ -1,6 +1,5 @@
 - hosts: vmhosts
   tasks:
-  - name : Install htop package
-    dnf: name=htop state=present update_cache=true
-    become: true
-    
+    - name: Install htop package
+      dnf: name=htop state=present update_cache=true
+      become: true

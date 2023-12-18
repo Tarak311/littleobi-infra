@@ -1,4 +1,3 @@
-- name: Name
 - hosts: vmhosts
   tasks:
   - name: Install virt package
@@ -10,3 +9,12 @@
   - name: Install libvirt package
     dnf: name=libvirt state=present update_cache=true
     become: true
+  - name: Install packer
+    become: true
+    dnf: name=packer state=present update_cache=true
+  - name: Install virt-manager
+    become: true
+    dnf: name=virt-manager state=present update_cache=true
+  - name: Install libguestfs-tools
+    become: true
+    dnf: name=libguestfs-tools state=present update_cache=true
